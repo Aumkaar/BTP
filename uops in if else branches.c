@@ -1,4 +1,4 @@
-// code for a LInux + 11th gen Intel machine which observes the difference in number of microoperations executed for different branches in an if-else statement
+// code for an 11th gen Intel machine which observes the difference in number of microoperations executed in if and else branches respectively in square and multiply algo
 
 #include <stdio.h>
 #include <stdint.h>
