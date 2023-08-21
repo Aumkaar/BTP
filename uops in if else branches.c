@@ -21,7 +21,8 @@ int main()
 
 	// count1 measures the number of microoperations executed for the if branch
 	// count2 measures the number of microoperations executed for the else branch
-	long long count1, count2;
+	long long count1 = 0;
+	long long count2 = 0;
 
 	long long count1sum = 0;
 	double count1avg = 0;
@@ -54,53 +55,48 @@ int main()
 
 	for (int i = 0; i < 1000000; i++); // warmup
 
-	// multiply and square algorithm where only if branch is taken
-	uint64_t x = 2;
-	uint64_t y = 0b11111111;
-	uint64_t result = 1;
-	long long noOfCycles = 0;
-	while (y > 0) {
-		ioctl(fd1, PERF_EVENT_IOC_RESET, 0);
-		ioctl(fd1, PERF_EVENT_IOC_ENABLE, 0);
-		noOfCycles++;
-		if (y & 1) {
-			result *= x;
-		}
-		y >>= 1;
-		x *= x;
-		ioctl(fd1, PERF_EVENT_IOC_DISABLE, 0);
-		read(fd1, &count1, sizeof(long long));
-		count1sum += count1;
-	}
-	count1avg = (double) count1sum / noOfCycles;
+	// multiply and square algorithm
 
-	// multiply and square algorithm where only else branch is taken
-	x = 2;
-	y = 0b10000000;
-	result = 1;
-	noOfCycles = 0;
+	uint64_t x = 2;
+	uint64_t y = 0b10110100;
+	uint64_t result = 1;
+	long long noOfCycles1 = 0;
+	long long noOfCycles2 = 0;
+	
 	while (y > 0) {
+		if (y & 1) {
+			ioctl(fd1, PERF_EVENT_IOC_RESET, 0);
+			ioctl(fd1, PERF_EVENT_IOC_ENABLE, 0);
+			
+			result *= x;
+			
+			ioctl(fd1, PERF_EVENT_IOC_DISABLE, 0);
+			read(fd1, &count1, sizeof(long long));
+		}
 		ioctl(fd2, PERF_EVENT_IOC_RESET, 0);
 		ioctl(fd2, PERF_EVENT_IOC_ENABLE, 0);
-		noOfCycles++;
-		if (y & 1) {
-			result *= x;
-		}
 		y >>= 1;
 		x *= x;
 		ioctl(fd2, PERF_EVENT_IOC_DISABLE, 0);
 		read(fd2, &count2, sizeof(long long));
-		count2sum += count2;
 
-		// to eliminate the final iteration when if branch is taken
-		if(result > 1) 
+		count1 += count2;
+		if(count1 != count2)
 		{
-			count2sum -= count2;
-			noOfCycles--;
+			noOfCycles1++;
+			count1sum += count1;
+			count1 = 0;
+		}
+		else
+		{
+			noOfCycles2++;
+			count2sum += count2;
+			count2 = 0;
 		}
 	}
 
-	count2avg = (double) count2sum / noOfCycles;
+	count1avg = (double) count1sum / noOfCycles1;
+	count2avg = (double) count2sum / noOfCycles2;
 
 	printf("Average number of microoperations executed for the if branch: %f\n", count1avg);
 	printf("Average number of microoperations executed for the else branch: %f\n", count2avg);
