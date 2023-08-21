@@ -62,7 +62,7 @@ int main()
 	uint64_t result = 1;
 	long long noOfCycles1 = 0;
 	long long noOfCycles2 = 0;
-	
+
 	while (y > 0) {
 		if (y & 1) {
 			ioctl(fd1, PERF_EVENT_IOC_RESET, 0);
@@ -81,13 +81,14 @@ int main()
 		read(fd2, &count2, sizeof(long long));
 
 		count1 += count2;
-		if(count1 != count2)
+
+		if(count1 != count2)				// if branch was taken if count1 != count2
 		{
 			noOfCycles1++;
 			count1sum += count1;
 			count1 = 0;
 		}
-		else
+		else								// else branch was taken if count1 == count2, or count1 == 0
 		{
 			noOfCycles2++;
 			count2sum += count2;
