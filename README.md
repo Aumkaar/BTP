@@ -1,2 +1,2 @@
 # BTP
-Files related to BtP work
+Files related to BTP work
