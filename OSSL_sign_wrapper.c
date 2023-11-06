@@ -8,6 +8,14 @@
 #include <openssl/sha.h>
 
 // Wrapper function for performing ECDSA signing using OpenSSL's EVP
+/*
+* Parameters:
+*   Return: 0 = Success; 1 = Failure
+*   Inputs: EVP_PKEY *evp_key - Pointer to the private key
+*           uint8_t *data - Pointer to the data to be signed
+*           uint32_t data_size - Size of the data to be signed
+*   Output: unsigned char **signature - Pointer to the signature
+*/
 int openssl_ecdsa_sign(const uint8_t *data, uint32_t data_size, const EVP_PKEY *evp_key, unsigned char **signature, size_t *signature_size) {
     EVP_MD_CTX *mctx = EVP_MD_CTX_new();
     if (!mctx) {
