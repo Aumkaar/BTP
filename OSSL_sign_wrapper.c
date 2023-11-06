@@ -56,6 +56,28 @@ int openssl_ecdsa_sign(const uint8_t *data, uint32_t data_size, const EVP_PKEY *
     return 0;
 }
 
+// Function to verify an ECDSA signature
+// 1 for success, 0 for failure
+int verify_ecdsa_signature(const uint8_t *data, uint32_t data_size, const EVP_PKEY *evp_key, const unsigned char *signature, size_t signature_size) {
+    EVP_MD_CTX *mctx = EVP_MD_CTX_new();
+    if (!mctx) {
+        return 0;
+    }
+
+    if (1 != EVP_DigestVerifyInit(mctx, NULL, EVP_sha256(), NULL, evp_key)) {
+        return 0;
+    }
+
+    if (1 != EVP_DigestVerifyUpdate(mctx, data, data_size)) {
+        return 0;
+    }
+
+    int result = EVP_DigestVerifyFinal(mctx, signature, signature_size);
+    EVP_MD_CTX_free(mctx);
+
+    return result; // 1 for success, 0 for failure
+}
+
 int main() {
     const uint8_t data[] = "Hello, World!";
     uint32_t data_size = sizeof(data);
@@ -93,7 +115,13 @@ int main() {
             printf("%02X", signature[i]);
         }
         printf("\n");
-        printf("Signature successful!\n");
+
+        // Verify the signature
+        if (verify_ecdsa_signature(data, data_size, evp_key, signature, signature_size)) {
+            printf("Signature verified successfully!\n");
+        } else {
+            printf("Signature verification failed.\n");
+        }
     } 
     else {
         fprintf(stderr, "Error: Unable to sign the data1\n");
